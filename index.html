@@ -12,13 +12,18 @@
     </head>
     <body>
         <div>
+            <label>名前：<input type="text" id="username"></label>
+            <label>タイトル：<input type="text" id="title"></label>
             <button id="undo">戻す</button>  
             <button id="redo">進める</button>
-            <canvas id="camera"></canvas>
+            <div>
+                <video  class="overlay" id="camera_video"></video>
+                <canvas class="overlay" id="camera"></canvas>
+            </div>
             <button id="imageSave">SAVE</button>
             <button id="imageLoad">LOAD</button>
             <button id="shutter">写真を撮る</button>
-            <ul id="imglist"></ul>
+            <DL id="imglist"></DL>
         </div>
     </body>
 </html>

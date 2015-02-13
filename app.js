@@ -1,107 +1,113 @@
-var server = 'http://fxos-ps.azurewebsites.net';
-//var server = 'http://localhost:8000';
-var api = server+'/api/photos';
-var apiget = server+'/api/myphotos/';
+//var server = 'http://fxos-ps.azurewebsites.net';
+var server = 'http://localhost:8000';
+var api = server + '/api/photos';
+var apiget = server + '/api/myphotos/';
 
-//photoService.query('test', function(d){console.log('sucess!',d)});
-//photoService.save(photo_data, function(d){console.log('sucess!',d)});
+var $$ = function(selector) {
+  return document.querySelector(selector);
+}
 var photoService = {
-  save: function(photo_data, callback){
+  save: function(photo_data, callback) {
     $.ajax({
       type: 'POST',
       data: JSON.stringify(photo_data),
       contentType: 'application/json',
-      url: api,           
+      url: api,
       success: callback
     });
   },
-  query: function(username, callback){
+  query: function(username, callback) {
+    console.log(username)
     $.ajax({
       url: apiget + username,
-      success: function(data){
-        console.log('apiget!',data);
-      },
+      success: callback,
       dataType: 'json'
     });
   }
 };
 
+var cnvCtrl = {
+  drowImg: function(video) {
+    cnvCtrl.ctx.drawImage(video, 0, 0, cnvCtrl.canvas.width, cnvCtrl.canvas.height);
+  },
+  createImage: function(base64) {
+    var img = document.createElement('img');
+    img.setAttribute('src', base64);
+    return img;
 
-$(function () { 
-	var photFrame = document.getElementById('camera');
+  }
+};
+cnvCtrl.canvas = (function() {
+  return document.getElementById('camera')
+})();
+cnvCtrl.ctx = (function() {
+  return cnvCtrl.canvas.getContext('2d')
+})();
+cnvCtrl.canvas.width = 320;
+cnvCtrl.canvas.height = 240;
 
-	if (photFrame.getContext) {
-	
-		var context = photFrame.getContext('2d');
-		
-		//左から20上から40の位置に、幅50高さ100の四角形を描く
-		context.fillRect(20,40,50,100); 
-		
-		//色を指定する
-		context.strokeStyle = 'rgb(00,00,255)'; //枠線の色は青
-		context.fillStyle = 'rgb(255,00,00)'; //塗りつぶしの色は赤
-		
-		//左から200上から80の位置に、幅100高さ50の四角の枠線を描く
-		context.strokeRect(200,80,100,50);
-		
-		//左から150上から75の位置に、半径60の半円を反時計回り（左回り）で描く
-		context.arc(150,75,60,Math.PI*1,Math.PI*2,true);
-		context.fill();
-	
-	};
 
-    var base64 = '';
-	$('#imageSave').click(function () {
+$(function() {
 
-		var photo_data = {
-			img: photFrame.toDataURL(),
-			usr: 'test'
-		};
-		
-		photoService.save(photo_data, function(d){console.log('sucess!',d)});
-		
-	});
-	
-	$('#imageLoad').click(function () { 
-		
-		photoService.query('test', function(d){
-			console.log('sucess!',d);
-		})
-		
-	});
-	
-	$('#imageDelete').click(function () { 
-		imageTable.del({}).then(function (del) {
-			console.log('DELETE DONE:', del);
-		 }, handleError);
-	});
-	 function handleError(error) {
-        console.log('ERR:', error);
+  $('#imageSave').click(function() {
+    photoService.save(
+      {
+        img: cnvCtrl.canvas.toDataURL(),
+        usr: $('#username').val()
+      }, function(d) {
+      console.log('sucess!', d)
+    });
+  });
+
+  $('#imageLoad').click(function() {
+    photoService.query($('#username').val(), function(data) {
+      console.log('sucess!:v:', data);
+      data.photo_data.forEach(function(v) {
+        var li = $('<dd>');
+        li.append(cnvCtrl.createImage(v.img))
+        $('#imglist')
+          .append($('dt').append('画像'))
+          .append(li)
+      });
+    });
+  });
+
+  /************************** use camera **************************/
+  navigator.getUserMedia = (navigator.getUserMedia ||
+    navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia ||
+    navigator.msGetUserMedia);
+
+
+  $('#shutter').click(function() {
+    if (navigator.getUserMedia) {
+      navigator.getUserMedia({
+          video: true,
+          audio: false
+        },
+        function(localMediaStream) {
+          var video = document.querySelector('video');
+          video.src = window.URL.createObjectURL(localMediaStream);
+          video.width = cnvCtrl.canvas.width;
+          video.height = cnvCtrl.canvas.height;
+          video.onloadedmetadata = function(e) {
+            console.log(e, video)
+            video.play();
+          };
+
+          cnvCtrl.canvas.addEventListener("click", function shot() {
+            cnvCtrl.drowImg(video);
+            localMediaStream.stop();
+            cnvCtrl.canvas.removeEventListener("click", shot);
+          });
+        },
+        function(err) {
+          console.log("The following error occured: " + err);
+        }
+      );
+    } else {
+      console.log("getUserMedia not supported");
     }
-
-
-/**************************  camera **************************/
-// var options = {
-//   mode: 'picture',
-//   recorderProfile: 'jpg',
-//   previewSize: {
-//     width: 352,
-//     height: 288
-//   }
-// };
-// var camera = navigator.mozCameras.getListOfCameras()[0];
-// function onSuccess(camera) {
-//   // Do stuff with the camera
-// };
-// function onError(error) {
-//   console.warn(error);
-// };
-// $('#shutter').click(function(){
-//   navigator.mozCameras.getCamera(camera, options, onSuccess, onError);
-// });
-
-
+  });
 
 });
-  
-
