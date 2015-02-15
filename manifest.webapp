@@ -10,9 +10,16 @@
     "128": "/icons/icon128x128.png"
   },
   "type": "privileged",
+  "orientation":"portrait-primary",
   "permissions": {
+    "audio-capture": {
+      "description": "Required to capture audio via getUserMedia"
+    },
+    "video-capture": {
+      "description": "camera preview"
+    },
     "device-storage:pictures": {
-        "access": "readcreate"
+      "access": "readcreate"
     },
     "camera": {
       "description": "Required for accessing cameras on the device."
