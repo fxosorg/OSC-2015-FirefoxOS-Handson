@@ -1,11 +1,12 @@
-var server = 'http://fxos-ps.azurewebsites.net';
-//var server = 'http://localhost:8000';
+//var server = 'http://fxos-ps.azurewebsites.net';
+var server = 'http://localhost:8000';
 var api = server + '/api/photos';
 var apiget = server + '/api/myphotos/';
 var constrainedWidth = 240;
 var constrainedHeight = 320;
 
 var $$ = function(selector) {return document.querySelector(selector); }
+var $$$ = function(tag) { return document.createElement(tag); };
 
 var photoService = {
   save: function(photo_data, callback) {
@@ -18,7 +19,7 @@ var photoService = {
     });
   },
   query: function(username, callback) {
-    console.log(username)
+    console.log('query', apiget + username)
     $.ajax({
       url: apiget + username,
       success: callback,
@@ -101,27 +102,15 @@ $(function() {
 
   $('#imageSave').click(function() {
     // ユーザー名とタイトルは必須！
+    console.log('push test');
     photoService.save(
       {
-        img: cnvCtrl.canvas.toDataURL(),
-        title: $('#username').val(),
-        usr: $('#title').val()
+        img:   cnvCtrl.canvas.toDataURL(),
+        title: $$('#title').value,
+        usr:   $$('#username').value
       }, function(data) {
         console.log('sucess!', data);
       });
-  });
-
-  $('#imageLoad').click(function() {
-    photoService.query($('#username').val(), function(data) {
-      console.log('sucess!:v:', data);
-      data.photo_data.forEach(function(v) {
-        var li = $('<dd>');
-        li.append(cnvCtrl.createImage(v.img))
-        $('#imglist')
-          .append($('dt').append('画像'))
-          .append(li)
-      });
-    });
   });
 
   /************************** use camera **************************/
