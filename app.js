@@ -2,6 +2,7 @@
 var server = 'http://localhost:8000';
 var api = server + '/api/photos';
 var apiget = server + '/api/myphotos/';
+
 var constrainedWidth = 240;
 var constrainedHeight = 320;
 
@@ -39,11 +40,10 @@ var cnvCtrl = {
   },
   /** CANVAS **/
   drowImg: function(img) {
-    cnvCtrl.ctx.drawImage(img, 
-      0, 0, cnvCtrl.canvas.width, cnvCtrl.canvas.height);
+    cnvCtrl.ctx.drawImage(img, 0, 0, cnvCtrl.canvas.width, cnvCtrl.canvas.height);
   },
   createImage: function(base64) {
-    var img = document.createElement('img');
+    var img = $$$('img');
     img.setAttribute('src', base64);
     return img;
   },
@@ -75,32 +75,34 @@ var cnvCtrl = {
     MediaStream:null,
     sucess: function(localMediaStream){
       cnvCtrl.video.MediaStream = localMediaStream;
+      // ううん・・・firefox os で onloadedmetadata が動かない？
 //       cnvCtrl.video.element.onloadedmetadata = function(e) {
 //         cnvCtrl.video.element.play();
 //       };
-      // ううん・・・firefox os で onloadedmetadata が動かない？
-      setTimeout(function(){
-        cnvCtrl.video.element.play();
-      },1000);
       cnvCtrl.video.element.src = window.URL.createObjectURL(localMediaStream);
+      cnvCtrl.video.element.play();
       cnvCtrl.video.element.addEventListener("click", function shot() {
         console.log('on click');
         try{
-        cnvCtrl.drowImg(cnvCtrl.video.element);
-      }catch(e){ console.log('done drow', e); }
+          cnvCtrl.drowImg(cnvCtrl.video.element);
+          cnvCtrl.video.element.pause()
+        }catch(e){ console.log('done drow', e); }
         
         cnvCtrl.video.MediaStream.stop();
         cnvCtrl.show.canvas();
         cnvCtrl.video.element.removeEventListener("click", shot);
       });
+    },
+    error: function(err) {
+      console.log("The following error occured: " + err);
     }
   }
 };
 cnvCtrl.init();
 
-$(function() {
+var onload_func = function() {
 
-  $('#imageSave').click(function() {
+  var imageSave = function(){
     // ユーザー名とタイトルは必須！
     console.log('push test');
     photoService.save(
@@ -111,38 +113,31 @@ $(function() {
       }, function(data) {
         console.log('sucess!', data);
       });
-  });
+  };
+  $$('#imageSave').addEventListener('click', imageSave, false);
 
   /************************** use camera **************************/
-  navigator.getUserMedia = (navigator.getUserMedia ||
-    navigator.webkitGetUserMedia ||
-    navigator.mozGetUserMedia ||
-    navigator.msGetUserMedia);
+  navigator.getUserMedia = (navigator.getUserMedia || navigator.mozGetUserMedia);
 
   var video_constraints = {
     "mandatory": {
       "minWidth": constrainedWidth,
       "minHeight": constrainedHeight,
       "minFrameRate": "30"
-    },
-    "optional": []
+    }
   };
 
-  $('#shutter').click(function() {
-    if (navigator.getUserMedia) {
+  var shutter = function() {
       cnvCtrl.show.video();
       navigator.getUserMedia({
           video: video_constraints,
           audio: false
         },
         cnvCtrl.video.sucess,
-        function(err) {
-          console.log("The following error occured: " + err);
-        }
+        cnvCtrl.video.error
       );
-    } else {
-      console.log("getUserMedia not supported");
-    }
-  });
+  };
+  $$('#shutter').addEventListener('click', shutter, false);
 
-});
+};
+document.addEventListener('DOMContentLoaded', onload_func, false);

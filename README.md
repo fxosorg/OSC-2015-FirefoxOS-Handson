@@ -1,6 +1,9 @@
 FxOS ハンズオン
 ----
 
+参考
+http://www.slideshare.net/chikoski/20150118-firefoxoshandsonhelloworld
+
 ### 内容
 
  1. お絵描きアプリ
