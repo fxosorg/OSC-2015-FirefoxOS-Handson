@@ -1,64 +1,60 @@
-//var server = 'http://fxos-ps.azurewebsites.net';
-var server = 'http://localhost:8000';
-var api = server + '/api/photos';
-var apiget = server + '/api/myphotos/';
+window.navigator.getUserMedia =
+   ( navigator.getUserMedia ||
+     navigator.webkitGetUserMedia ||
+     navigator.mozGetUserMedia ||
+     navigator.msGetUserMedia);
 
+var server = 'http://fxos-ps.azurewebsites.net';
+var api = server + '/api/photos';
+
+// Flame size : 320 x 240
 var constrainedWidth = 240;
 var constrainedHeight = 320;
 
 var $$ = function(selector) {return document.querySelector(selector); }
 var $$$ = function(tag) { return document.createElement(tag); };
 
-var photoService = {
-  save: function(photo_data, callback) {
-    $.ajax({
-      type: 'POST',
-      data: JSON.stringify(photo_data),
-      contentType: 'application/json',
-      url: api,
-      success: callback
-    });
-  },
-  query: function(username, callback) {
-    console.log('query', apiget + username)
-    $.ajax({
-      url: apiget + username,
-      success: callback,
-      dataType: 'json'
-    });
-  }
-};
-
-var cnvCtrl = {
-  /** CONTRACTOR **/
+var FxOSApp = {
+  /** 初期化処理 **/
   init: function(){
-    cnvCtrl.canvas = $$('#camera');
-    cnvCtrl.ctx    = cnvCtrl.canvas.getContext('2d');
-    cnvCtrl.video.element = $$('#camera_video');
-    cnvCtrl.resize();
-    screen.onmozorientationchange = cnvCtrl.resize;
+    FxOSApp.canvas = $$('#camera');
+    FxOSApp.ctx    = FxOSApp.canvas.getContext('2d');
+    FxOSApp.video.element = $$('#camera_video');
+    FxOSApp.resize();
   },
-  /** CANVAS **/
+  /** データの保存 **/
+  service:{
+    save: function(){
+      
+      // ユーザー名とタイトルは必須！
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function(data)
+      {
+        if( this.readyState === 4 && this.status === 200 )
+        {
+          console.log('sucess!', data);
+        }
+      }
+      xhr.open( 'POST', api );
+      xhr.setRequestHeader( 'Content-Type', 'application/json; charset=utf-8' );
+      xhr.send(JSON.stringify({
+          img:   FxOSApp.canvas.toDataURL(),
+          title: $$('#title').value,
+          usr:   $$('#username').value
+        }));
+    },
+  },
+  /** キャンバスとカメラ入力の操作 **/
   drowImg: function(img) {
-    cnvCtrl.ctx.drawImage(img, 0, 0, cnvCtrl.canvas.width, cnvCtrl.canvas.height);
-  },
-  createImage: function(base64) {
-    var img = $$$('img');
-    img.setAttribute('src', base64);
-    return img;
+    FxOSApp.ctx.drawImage(img, 0, 0, FxOSApp.canvas.width, FxOSApp.canvas.height);
   },
   resize: function(e){
-    // 320 x 240
-    cnvCtrl.canvas.width  = constrainedWidth;
-    cnvCtrl.canvas.height = constrainedHeight;
-    cnvCtrl.video.element.width  = constrainedWidth;
-    cnvCtrl.video.element.height = constrainedHeight;
+    FxOSApp.canvas.width  = constrainedWidth;
+    FxOSApp.canvas.height = constrainedHeight;
+    FxOSApp.video.element.width  = constrainedWidth;
+    FxOSApp.video.element.height = constrainedHeight;
   },
-  isPortrait: function(){ // 縦方向だとtrue
-    console.log( screen.orientation)
-    return screen.mozOrientation === 'portrait';
-  },
-  /** SHOW CONTROLLER **/
+  /** canvasとvideoタグの切り替え **/
   show:{
     video:function(){
       $$('#camera_video').className = 'show';
@@ -69,75 +65,56 @@ var cnvCtrl = {
       $$('#camera').className = 'show';
     }
   },
-  /** VIDEO **/
+  /** ビデオ要素関係の操作 **/
   video:{
+    shutter: function(){
+      FxOSApp.show.video();
+      window.navigator.getUserMedia({
+          video:{
+            "mandatory": {
+              "minWidth": constrainedWidth,
+              "minHeight": constrainedHeight,
+              "minFrameRate": "30"
+            },
+          },
+          audio: false
+        },
+        FxOSApp.video.sucess,
+        FxOSApp.video.error
+      );
+    },
     element:null,
     MediaStream:null,
     sucess: function(localMediaStream){
-      cnvCtrl.video.MediaStream = localMediaStream;
-      // ううん・・・firefox os で onloadedmetadata が動かない？
-//       cnvCtrl.video.element.onloadedmetadata = function(e) {
-//         cnvCtrl.video.element.play();
-//       };
-      cnvCtrl.video.element.src = window.URL.createObjectURL(localMediaStream);
-      cnvCtrl.video.element.play();
-      cnvCtrl.video.element.addEventListener("click", function shot() {
-        console.log('on click');
-        try{
-          cnvCtrl.drowImg(cnvCtrl.video.element);
-          cnvCtrl.video.element.pause()
-        }catch(e){ console.log('done drow', e); }
-        
-        cnvCtrl.video.MediaStream.stop();
-        cnvCtrl.show.canvas();
-        cnvCtrl.video.element.removeEventListener("click", shot);
+      FxOSApp.video.MediaStream = localMediaStream;
+      FxOSApp.video.element.src = window.URL.createObjectURL(localMediaStream);
+      FxOSApp.video.element.play();
+      FxOSApp.video.element.addEventListener("click", function shot() {
+        window.navigator.vibrate([100,150,100,150,100]);
+        FxOSApp.drowImg(FxOSApp.video.element);
+        FxOSApp.video.element.pause()
+        FxOSApp.video.MediaStream.stop();
+        FxOSApp.show.canvas();
+        FxOSApp.video.element.removeEventListener("click", shot);
       });
     },
     error: function(err) {
-      console.log("The following error occured: " + err);
+      console.log("The following error occured: ", err);
     }
   }
 };
-cnvCtrl.init();
+
 
 var onload_func = function() {
 
-  var imageSave = function(){
-    // ユーザー名とタイトルは必須！
-    console.log('push test');
-    photoService.save(
-      {
-        img:   cnvCtrl.canvas.toDataURL(),
-        title: $$('#title').value,
-        usr:   $$('#username').value
-      }, function(data) {
-        console.log('sucess!', data);
-      });
-  };
-  $$('#imageSave').addEventListener('click', imageSave, false);
+  // 初期化処理
+  FxOSApp.init();
 
-  /************************** use camera **************************/
-  navigator.getUserMedia = (navigator.getUserMedia || navigator.mozGetUserMedia);
+  /************************** キャンバスデータをセーブ **************************/
+  $$('#imageSave').addEventListener('click', FxOSApp.service.save, false);
 
-  var video_constraints = {
-    "mandatory": {
-      "minWidth": constrainedWidth,
-      "minHeight": constrainedHeight,
-      "minFrameRate": "30"
-    }
-  };
-
-  var shutter = function() {
-      cnvCtrl.show.video();
-      navigator.getUserMedia({
-          video: video_constraints,
-          audio: false
-        },
-        cnvCtrl.video.sucess,
-        cnvCtrl.video.error
-      );
-  };
-  $$('#shutter').addEventListener('click', shutter, false);
+  /************************** カメラを使う **************************/
+  $$('#shutter').addEventListener('click', FxOSApp.video.shutter, false);
 
 };
 document.addEventListener('DOMContentLoaded', onload_func, false);
