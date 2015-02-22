@@ -6,28 +6,8 @@
   "icons": {
     "16": "/icons/icon16x16.png",
     "48": "/icons/icon48x48.png",
-    "60": "/icons/icon60x60.png",
     "128": "/icons/icon128x128.png"
   },
   "type": "privileged",
-  "orientation":"portrait-primary",
-  "permissions": {
-    "audio-capture": {
-      "description": "Required to capture audio via getUserMedia"
-    },
-    "video-capture": {
-      "description": "camera preview"
-    },
-    "device-storage:pictures": {
-      "access": "readcreate"
-    },
-    "camera": {
-      "description": "Required for accessing cameras on the device."
-    },
-    "systemXHR":{},
-    "contacts": {
-        "description" : "Reading out contacts",
-        "access": "readcreate"
-    }
-  }
+  "permissions": {}
 }
