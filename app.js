@@ -17,7 +17,7 @@ var $$$ = function(tag) { return document.createElement(tag); };
 var FxOSApp = {
   /** 初期化処理 **/
   init: function(){
-    FxOSApp.canvas = $$('#camera');
+    FxOSApp.canvas = $$('#canvas');
     FxOSApp.ctx    = FxOSApp.canvas.getContext('2d');
     FxOSApp.video.element = $$('#camera_video');
     FxOSApp.resize();
@@ -58,11 +58,11 @@ var FxOSApp = {
   show:{
     video:function(){
       $$('#camera_video').className = 'show';
-      $$('#camera').className = 'hide';
+      $$('#canvas').className = 'hide';
     },
     canvas:function(){
       $$('#camera_video').className = 'hide';
-      $$('#camera').className = 'show';
+      $$('#canvas').className = 'show';
     }
   },
   /** ビデオ要素関係の操作 **/
@@ -103,7 +103,6 @@ var FxOSApp = {
     }
   }
 };
-
 
 var onload_func = function() {
 
