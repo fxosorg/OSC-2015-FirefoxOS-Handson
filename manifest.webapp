@@ -1,13 +1,18 @@
 {
   "version": "1",
-  "name": "PhotoShare",
-  "description": "A Hello World app",
+  "name": "写真アプリ",
+  "description": "これは写真アプリです",
   "launch_path": "/index.html",
   "icons": {
-    "16": "/icons/icon16x16.png",
-    "48": "/icons/icon48x48.png",
-    "128": "/icons/icon128x128.png"
+    "16": "/icons/firefox-16.png",
+    "48": "/icons/firefox-48.png",
+    "128": "/icons/firefox-128.png"
   },
   "type": "privileged",
-  "permissions": {}
+  "orientation":"portrait-primary",
+  "permissions": {
+    "video-capture": {
+      "description": "カメラを使う"
+    }
+  }
 }

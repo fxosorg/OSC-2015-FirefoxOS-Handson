@@ -15,7 +15,17 @@
     </head>
     <body>
         <div>
+
+            <label>作者
+            <div><input type="text" id="username"></div></label>
+            
+            <label>タイトル
+            <div><input type="text" id="title"></div></label>
+            
+        </div>
+        <div>
             <div>
+                <button id="shutter">写真を撮る</button>
                 <span class="colorpick">
                     <input type="text" value="" class="pickval hide" />
                     <span class="add-on"><i></i></span>
@@ -27,7 +37,11 @@
             </div>
         </div>
         <div>
+            <video  id="camera_video" class="hide"></video>
             <canvas id="canvas"       class="show"></canvas>
+        </div>
+        <div>
+            <button id="imageSave">アップロード</button>
         </div>
     </body>
 </html>
