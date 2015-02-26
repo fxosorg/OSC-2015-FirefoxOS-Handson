@@ -13,6 +13,9 @@
   "permissions": {
     "video-capture": {
       "description": "カメラを使う"
+    },
+     "desktop-notification":{
+       "description": "サーバアップロードの通知を行います"
     }
   }
 }
